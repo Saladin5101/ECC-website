@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECC Compiler - ELFCOST 编译器</title>
+    <!-- 引入 Tailwind CSS 用于快速样式设计 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome 用于图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 自定义 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',      // 主色调：专业蓝
+                        secondary: '#36D399',    // 辅助色：成功绿（用于复制反馈）
+                        dark: '#1E293B',         // 深色背景
+                        light: '#F8FAFC',        // 浅色背景
+                    },
+                    fontFamily: {
+                        mono: ['Fira Code', 'Consolas', 'monospace'], // 代码字体
+                        sans: ['Inter', 'system-ui', 'sans-serif'],   // 正文字体
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-bounce {
+                transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa fa-code text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold">ECC Compiler</h1>
+            </div>
+            <nav>
+                <a href="#features" class="px-3 py-2 rounded hover:bg-gray-100 transition">功能</a>
+                <a href="#usage" class="px-3 py-2 rounded hover:bg-gray-100 transition">使用</a>
+                <a href="https://github.com/Saladin5101/ECC" target="_blank" class="px-3 py-2 rounded hover:bg-gray-100 transition flex items-center gap-1">
+                    <i class="fa fa-github"></i> GitHub
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主横幅：突出安装框 -->
+    <section class="bg-gradient-to-r from-dark to-gray-800 text-white py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6 text-shadow">
+                    ELFCOST 语言编译器
+                </h2>
+                <p class="text-lg md:text-xl text-gray-300 mb-10">
+                    一键将 .elfc 源码编译为 x86 实模式机器码，适用于嵌入式开发与底层编程
+                </p>
+                
+                <!-- 核心：超大安装脚本复制框 -->
+                <div class="bg-gray-900 rounded-lg shadow-2xl p-4 md:p-6 mb-6 transform hover:scale-[1.01] transition-all">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400 text-sm">安装命令</span>
+                        <button id="copyBtn" class="bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition">
+                            <i class="fa fa-clipboard"></i> 复制
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <pre class="font-mono text-sm md:text-base overflow-x-auto p-4 bg-gray-800 rounded-md text-gray-200"><code id="installCmd">bash -c "$(curl -fsSL https://raw.githubusercontent.com/Saladin5101/ECC/main/install.sh)"</code></pre>
+                        <!-- 复制成功提示（默认隐藏） -->
+                        <div id="copySuccess" class="absolute top-2 right-2 bg-secondary text-white text-xs px-2 py-1 rounded shadow hidden">
+                            已复制！
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-gray-400 text-sm">
+                    <i class="fa fa-info-circle"></i> 支持 Debian/Ubuntu 与 npm 环境，自动适配安装方式,macOS 后续适配
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能介绍 -->
+    <section id="features" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">为什么选择 ECC 编译器？</h2>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- 功能1 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+                    <div class="text-primary text-3xl mb-4">
+                        <i class="fa fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">快速编译</h3>
+                    <p class="text-gray-600">处理 .elfc 源码，直接生成可执行的 x86 实模式机器码(.bin)，无需中间步骤</p>
+                </div>
+                
+                <!-- 功能2 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+                    <div class="text-primary text-3xl mb-4">
+                        <i class="fa fa-code-fork"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">多平台支持</h3>
+                    <p class="text-gray-600">提供 .deb 包与 npm 包两种分发方式，兼容 Debian 系系统与 Node.js 生态</p>
+                </div>
+                
+                <!-- 功能3 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+                    <div class="text-primary text-3xl mb-4">
+                        <i class="fa fa-bug"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">调试友好</h3>
+                    <p class="text-gray-600">内置 debug 模式，输出详细编译日志与中间代码，方便定位语法与逻辑错误</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用示例 -->
+    <section id="usage" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">快速上手</h2>
+            
+            <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- 步骤1：安装 -->
+                <div class="p-6 border-b border-gray-100">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                        <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
+                        安装 ECC 编译器
+                    </h3>
+                    <p class="mb-4">使用上方的安装命令，一键完成安装（需要 sudo 权限）</p>
+                    <pre class="bg-gray-800 text-gray-200 p-3 rounded-md text-sm font-mono overflow-x-auto">
+# 安装完成后验证
+elfc-compiler --version</pre>
+                </div>
+                
+                <!-- 步骤2：编写代码 -->
+                <div class="p-6 border-b border-gray-100">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                        <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+                        编写 ELFCOST 源码
+                    </h3>
+                    <p class="mb-4">创建一个简单的 .elfc 文件（例如 test.elfc）：</p>
+                    <pre class="bg-gray-800 text-gray-200 p-3 rounded-md text-sm font-mono overflow-x-auto">
+use x86_real;  # 指定目标架构为 x86 实模式
+
+# 寄存器赋值
+reg.ax = 0x1234;
+reg.bx = 0x5678;</pre>
+                </div>
+                
+                <!-- 步骤3：编译 -->
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                        <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">3</span>
+                        编译为机器码
+                    </h3>
+                    <p class="mb-4">使用 compile 模式生成 .bin 文件：</p>
+                    <pre class="bg-gray-800 text-gray-200 p-3 rounded-md text-sm font-mono overflow-x-auto">
+# 编译命令
+elfc-compiler compile -el test.elfc -ma output.bin
+
+# 查看生成的机器码
+hexdump -C output.bin</pre>
+                    <p class="mt-4 text-gray-600 text-sm">
+                        输出应为：<code class="bg-gray-100 px-1 py-0.5 rounded">b8 34 12 bb 78 56</code>（对应 x86 指令）
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-gray-400 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 ECC Compiler | 源码托管于 <a href="https://github.com/Saladin5101/ECC" target="_blank" class="text-primary hover:underline">GitHub</a></p>
+            <p class="mt-2 text-sm">使用 <i class="fa fa-heart text-red-500"></i> 开发，支持 ELFCOST 语言生态</p>
+        </div>
+    </footer>
+
+    <!-- 复制功能脚本 -->
+    <script>
+        // 获取元素
+        const copyBtn = document.getElementById('copyBtn');
+        const installCmd = document.getElementById('installCmd');
+        const copySuccess = document.getElementById('copySuccess');
+        
+        // 复制逻辑
+        copyBtn.addEventListener('click', () => {
+            // 复制文本到剪贴板
+            navigator.clipboard.writeText(installCmd.textContent).then(() => {
+                // 显示成功提示
+                copySuccess.classList.remove('hidden');
+                copyBtn.innerHTML = '<i class="fa fa-check"></i> 已复制';
+                copyBtn.classList.remove('bg-primary');
+                copyBtn.classList.add('bg-secondary');
+                
+                // 2秒后恢复原状
+                setTimeout(() => {
+                    copySuccess.classList.add('hidden');
+                    copyBtn.innerHTML = '<i class="fa fa-clipboard"></i> 复制';
+                    copyBtn.classList.remove('bg-secondary');
+                    copyBtn.classList.add('bg-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
+        });
+
+        // 平滑滚动（点击导航跳转时）
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
